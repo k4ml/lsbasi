@@ -3,6 +3,9 @@
 # there is no more input left for lexical analysis
 INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
 
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in xrange(0, len(l), n))
 
 class Token(object):
     def __init__(self, type, value):
@@ -97,6 +100,11 @@ class Interpreter(object):
         else:
             self.error()
 
+    def calc(self, left, op, right):
+        if op.type == PLUS:
+            return left.value + right.value
+        return left.value - right.value
+
     def expr(self):
         """Parser / Interpreter
 
@@ -104,7 +112,17 @@ class Interpreter(object):
         expr -> INTEGER MINUS INTEGER
         """
         # set current token to the first token taken from the input
+        tokens = []
         self.current_token = self.get_next_token()
+        tokens.append(self.current_token)
+        while self.current_token.value is not None:
+            self.current_token = self.get_next_token()
+            tokens.append(self.current_token)
+
+        parts = chunks(tokens, 3)
+        for part in parts:
+            print(self.calc(*part))
+        return
 
         # we expect the current token to be an integer
         left = self.current_token
@@ -152,4 +170,5 @@ def main():
 
 
 if __name__ == '__main__':
+    #import pdb;pdb.set_trace()
     main()
